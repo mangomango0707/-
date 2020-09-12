@@ -17,6 +17,8 @@ cloud.init()
 exports.main = async (event, context) => {
 
   const app = new TcbRouter({event})
+  
+  // 获取歌单数据
   app.router('playlist', async(ctx, next) => {
     // 查询歌单数据
     ctx.body = await cloud.database().collection('playlist')

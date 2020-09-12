@@ -15,6 +15,7 @@ Component({
     ['playlist.playCount'](count) {
       // console.log(count);
       // console.log(this._tranNumber(count, 2));
+      // 数据格式转化
       this.setData({
         _count: this._tranNumber(count, 2)
       })
