@@ -8,6 +8,7 @@
 
 <view class="playlist-container">
   <block wx:for="{{playlist}}" wx:key="_id">
+  <!-- 自定义歌单组件 -->
     <my-playlist playlist="{{item}}">
     </my-playlist>
   </block>
