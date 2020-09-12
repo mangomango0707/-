@@ -1,0 +1,10 @@
+.playlist-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin-top: 20rpx;
+}
+.img {
+  width: 100%;
+}
