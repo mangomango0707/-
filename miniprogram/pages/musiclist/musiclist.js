@@ -35,9 +35,15 @@ Page({
           name: res.result.playlist.name
         }
       })
+      this._setMusiclist()
       wx.hideLoading()
     })
     
+  },
+
+  // 将歌单的歌曲列表数据存到storage中
+  _setMusiclist() {
+    wx.setStorageSync('musiclist', this.data.musiclist)
   },
 
   /**

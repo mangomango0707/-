@@ -1,11 +1,15 @@
 // pages/player/player.js
+let musiclist = []
+let nowPlayingIndex = 0
+
 Page({
 
   /**
    * 页面的初始数据
    */
   data: {
-
+    // 背景图
+    picUrl: ''
   },
 
   /**
@@ -13,6 +17,26 @@ Page({
    */
   onLoad: function (options) {
     console.log(options);
+    // 当前选中歌曲在歌曲列表中的索引
+    nowPlayingIndex = options.index
+    // storage中选中歌单的歌曲列表
+    musiclist = wx.getStorageSync('musiclist')
+    // 获取选中歌曲信息
+    this._loadMusicDetail()
+  },
+
+  // 加载选中歌曲信息
+  _loadMusicDetail() {
+    let music = musiclist[nowPlayingIndex]
+    console.log(music);
+    // 设置播放歌曲页面导航头文字为歌曲名
+    wx.setNavigationBarTitle({
+      title: music.name,
+    })
+
+    this.setData({
+      picUrl: music.al.picUrl
+    })
   },
 
   /**

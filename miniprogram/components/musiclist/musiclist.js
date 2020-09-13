@@ -21,12 +21,13 @@ Component({
     onSelect(event) {
       console.log(event);
       const musicid = event.currentTarget.dataset.musicid
+      const index = event.currentTarget.dataset.index
       this.setData({
         playingId: musicid
       })
       // 跳转到歌曲播放页面
       wx.navigateTo({
-        url: `../../pages/player/player?musicid=${musicid}`,
+        url: `../../pages/player/player?musicId=${musicid}&index=${index}`,
       })
     }
   }
