@@ -1,16 +1,22 @@
 <!-- 背景图 -->
 <view class="player-container" style="background: url({{picUrl}}) no-repeat center/cover"></view>
 <view class="player-mask"></view>
+
 <view class="player-info">
   <!-- 唱片图片 -->
-  <view class="player-disc">
-    <image class="player-img" src="{{picUrl}}"></image>
+  <view class="player-disc {{isPlaying ? 'play' : ''}}">
+    <image class="player-img rotation {{isPlaying ? '' : 'rotation-paused'}}" src="{{picUrl}}"></image>
   </view>
-</view>
 
-<!-- 播放器控制面板 -->
-<view class="control">
-  <text class="iconfont icon-shangyishou"></text>
-  <text class="iconfont icon-shipin"></text>
-  <text class="iconfont icon-xiayishou"></text>
+  <!-- 进度条 -->
+  <view class="progress-bar">
+    <my-progress-bar bind:musicEnd="onNext" />
+  </view>
+
+  <!-- 播放器控制面板 -->
+  <view class="control">
+    <text class="iconfont icon-shangyishou" bind:tap="onPrev"></text>
+    <text class="iconfont {{isPlaying ? 'icon-zanting' : 'icon-shipin'}}" bind:tap="togglePlaying"></text>
+    <text class="iconfont icon-xiayishou" bind:tap="onNext"></text>
+  </view>
 </view>

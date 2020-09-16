@@ -48,6 +48,12 @@
   /* 旋转角度 */
   transform: rotate(-15deg);
   transform-origin: 24rpx 10rpx;
+  /* 以过渡的形式旋转 */
+  transition: transform .5s ease;
+}
+/* 一旦播放唱片指针旋转 */
+.play.player-disc::after {
+  transform: rotate(0deg);
 }
 .player-img {
   width: 368rpx;
@@ -75,7 +81,36 @@
 .icon-shangyishou, .icon-xiayishou {
   font-size: 60rpx;
 }
-.icon-shipin {
+.icon-shipin, .icon-zanting{
   font-size: 100rpx;
   margin: 0 60rpx;
+}
+
+/* 设置唱片图片旋转 */
+.rotation {
+  animation: rotation 12s linear infinite;
+  -moz-animation: rotation 12s linear infinite;	/* Firefox */
+  -webkit-animation: rotation 12s linear infinite;	/* Safari 和 Chrome */
+  -o-animation: rotation 12s linear infinite;	/* Opera */
+}
+.rotation-paused {
+  /* 定在当时动画的那一帧 */
+  animation-play-state: paused;
+}
+@keyframes rotation {
+  form {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 进度条样式 */
+.progress-bar {
+  width: 90%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 24%;
 }
