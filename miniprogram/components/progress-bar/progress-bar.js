@@ -2,6 +2,8 @@
 // 可移动区域和容器的宽度
 let movableAreaWidth = 0
 let movableViewWidth = 0
+// 当前的秒数
+let currentSec = -1
 // 当前歌曲总时长
 let duration = 0
 let isMoving = false // 表示当前进度条是否在拖拽，解决：当进度条拖动的时候和updatetime有冲突的问题
@@ -14,7 +16,7 @@ Component({
    * 组件的属性列表
    */
   properties: {
-
+    isSame: Boolean
   },
 
   /**
@@ -34,6 +36,10 @@ Component({
   // 组件生命周期函数
   lifetimes: {
     ready() {
+      // 如果当前调用的是同一首歌，重新设置时长
+      if(this.properties.isSame && this.data.showTime.totalTime === '00:00'){
+        this._setTime()
+      }
       this._getMovableDis()
       this._bindBGMEvent()
     }
@@ -53,18 +59,19 @@ Component({
         // 先保存progress、movableDis的值，但不设置，频繁设置影响性能
         this.data.progress = event.detail.x / (movableAreaWidth - movableViewWidth) * 100,
         this.data.movableDis = event.detail.x
+        isMoving = true
       }
-      isMoving = true
+      
     },
     // 当放开拖拽圆点时，设置当前时间/位置
     onTouchEnd() {
       // 获取当前时间
-      const currentFormat = this._dateFormat(backgroundAudioManager.currentTime)
+      const currentTimeFormat = this._dateFormat(Math.floor(backgroundAudioManager.currentTime))
       // 将progress、movableDis的值设置到页面中
       this.setData({
         progress: this.data.progress,
         movableDis: this.data.movableDis,
-        ['showTime.currentTime']: currentFormat.min+':'+currentFormat.sec
+        ['showTime.currentTime']: currentTimeFormat.min+':'+currentTimeFormat.sec
       })
       // 将音乐跳转到对应的时间播放，时间参数以秒为单位
       backgroundAudioManager.seek(duration * this.data.progress / 100)
@@ -89,6 +96,7 @@ Component({
       backgroundAudioManager.onPlay(() => {
         console.log('onPlay');
         isMoving = false
+        this.triggerEvent('musicPlay')
       })
 
       backgroundAudioManager.onStop(() => {
@@ -97,6 +105,7 @@ Component({
 
       backgroundAudioManager.onPause(() => {
         console.log('onPause');
+        this.triggerEvent('musicPause')
       })
 
       backgroundAudioManager.onWaiting(() => {
@@ -121,18 +130,31 @@ Component({
         console.log('onTimeUpdate');
         if(!isMoving){
           // 获取当前歌曲已经播放的时间
-          const currentTime = backgroundAudioManager.currentTime
+          const currentTime = backgroundAudioManager.currentTime 
           // 获取当前歌曲总时长
           const duration = backgroundAudioManager.duration
 
-          // 格式化时间
-          const currentTimeFormat = this._dateFormat(currentTime)
-          this.setData({
-            // 应该移动的距离
-            movableDis: (movableAreaWidth - movableViewWidth) * currentTime / duration,
-            progress: currentTime / duration * 100,
-            ['showTime.currentTime']: `${currentTimeFormat.min}:${currentTimeFormat.sec}`
-          })
+          const sec = currentTime.toString().split('.')[0]
+          if(sec != currentSec){
+            // console.log(currentTime);
+            // 格式化时间
+            const currentTimeFormat = this._dateFormat(currentTime)
+            this.setData({
+              // 应该移动的距离
+              movableDis: (movableAreaWidth - movableViewWidth) * currentTime / duration,
+              progress: currentTime / duration * 100,
+              ['showTime.currentTime']: `${currentTimeFormat.min}:${currentTimeFormat.sec}`
+            })
+
+            currentSec = sec
+
+            // 联动歌词，将当前每次update的时间传递出去
+            this.triggerEvent('timeUpdate', {
+              currentTime
+            })
+          }
+
+          
         }
         
       })

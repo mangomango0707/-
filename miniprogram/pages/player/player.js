@@ -4,6 +4,8 @@ let nowPlayingIndex = 0
 // 获取全局唯一的背景音乐管理器
 const BackgroundAudioManager = wx.getBackgroundAudioManager()
 
+const app = getApp()
+
 Page({
 
   /**
@@ -13,7 +15,12 @@ Page({
     // 背景图
     picUrl: '',
     // 播放状态变量
-    isPlaying: false
+    isPlaying: false,
+    // 表示当前歌词是否显示
+    isLyricShow: false,
+    // 歌词
+    lyric: '',
+    isSame: false //表示是否为同一首歌曲
   },
 
   /**
@@ -32,9 +39,22 @@ Page({
   // 加载选中歌曲信息
   _loadMusicDetail(musicId) {
 
-    // 每次加载，先停止上一首歌曲的播放再加载下一首
-    BackgroundAudioManager.stop()
+    // 判断当前是否是同一首歌曲
+    if(musicId === app.getPlayingMusicId()){
+      this.setData({
+        isSame: true
+      })
+    }else{
+      this.setData({
+        isSame: false
+      })
+    }
 
+    //先判断是不是同一首歌
+    if(!this.data.isSame){
+      // 每次加载，先停止上一首歌曲的播放再加载下一首
+      BackgroundAudioManager.stop()
+    }
     let music = musiclist[nowPlayingIndex]
     console.log(music);
     // 设置播放歌曲页面导航头文字为歌曲名
@@ -46,6 +66,8 @@ Page({
       picUrl: music.al.picUrl,
       isPlaying: false
     })
+
+    app.setPlayingMusicId(musicId)
 
     wx.showLoading({
       title: '歌曲加载中',
@@ -64,12 +86,25 @@ Page({
       let result = res.result
       // 设置音频的数据源
       BackgroundAudioManager.src = result.data[0].url
+
+      // 先判断有没有url资源，可能没有权限
+      if(result.data[0].url == null){
+        wx.showToast({
+          title: '无权限播放',
+        })
+        // 无需再进行其他赋值操作
+        return
+      }
+
+      //先判断是不是同一首歌
+    if(!this.data.isSame){
       // 需设置音频标题，否则报错
       BackgroundAudioManager.title = music.name
       BackgroundAudioManager.singer = music.ar[0].name
       BackgroundAudioManager.epname = music.al.name
       BackgroundAudioManager.coverImgUrl = music.al.picUrl
-
+    }
+      
       // console.log(BackgroundAudioManager.duration);
       
 
@@ -79,6 +114,28 @@ Page({
       })
 
       wx.hideLoading()
+
+      // 加载歌词
+      wx.cloud.callFunction({
+        name: 'music',
+        data: {
+          musicId,
+          $url: 'lyric'
+        }
+      }).then((res) => {
+        console.log(res)
+        // 歌词初始化
+        let lyric = '暂无歌词'
+        const lrc = res.result.lrc
+        if(lrc){
+          lyric = lrc.lyric
+        }
+        this.setData({
+          // 歌词需要传递给歌词组件
+          lyric
+        })
+
+      })
     })
   },
 
@@ -123,6 +180,33 @@ Page({
  
     // 重新加载新的歌曲
     this._loadMusicDetail(musiclist[nowPlayingIndex].id)
+  },
+
+  // 点击唱片图片切换为歌词显示
+  onChangeLyricShow() {
+    // 每次点击，更改歌词显示与否状态值
+    this.setData({
+      isLyricShow: !this.data.isLyricShow
+    })
+  },
+
+  // 将当前时间传递到歌词组件中
+  timeUpdate(event) {
+    // 根据选择器选取到歌词组件
+    this.selectComponent('.lyric').update(event.detail.currentTime)
+  },
+
+  // 切换系统面板播放状态联动小程序播放状态
+  onPlay() {
+    this.setData({
+      isPlaying: true
+    })
+  },
+
+  onPause() {
+    this.setData({
+      isPlaying: false
+    })
   },
 
   /**

@@ -42,6 +42,12 @@ exports.main = async (event, context) => {
     ctx.body = res.data 
   })
 
+  // 获取歌词信息
+  app.router('lyric', async(ctx, next) => {
+    const res = await axios.get(`${BASE_URL}/lyric?id=${event.musicId}&${ICODE}`)
+    ctx.body = res.data
+  })
+
   return app.serve();
 
 }
